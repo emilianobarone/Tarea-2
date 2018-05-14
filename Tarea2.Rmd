@@ -1,0 +1,298 @@
+---
+title: "Tarea 2"
+output: pdf_document
+---
+
+\newpage
+
+
+\centering
+
+##Estudiante: Emiliano Barone
+
+\raggedright
+
+#Ejercicio 1
+
+##Parte 1
+
+```{r, echo=FALSE}
+library(tidyverse)
+dato_emision<- gather(emisiones, key = fuente, value = emisión, -AÑO)
+
+
+
+dato_emision1= filter(dato_emision, fuente!=c("TOTAL"))
+dato_emision1= filter(dato_emision1, fuente!="S_C")
+dato_emision1= filter(dato_emision1, fuente!="NI")
+dato_emision1= filter(dato_emision1, fuente!="I_E")
+
+dato_emision1$fuente=as.factor(dato_emision1$fuente)
+dato_emision1$emisión=as.numeric(dato_emision1$emisión)
+```
+
+```{r}
+dato_emision1%>%
+  filter(!is.na(emisión))%>%
+  group_by(fuente)%>%
+  summarise(sumaEmision = sum(emisión))%>%
+  arrange(desc(sumaEmision))
+```
+
+\newpage
+
+##Parte 2
+
+```{r}
+dato_emision1%>%
+  filter(fuente=="Q_B" , emisión==max(emisión))
+
+```
+
+##Parte 3
+
+```{r}
+dato_emision1%>%
+  filter(!is.na(emisión))%>%
+  group_by(fuente)%>%
+  summarise(mediaEmision = mean(emisión))%>%
+  arrange(desc(mediaEmision))
+```
+
+\newpage
+
+##Parte 4
+
+```{r, echo=FALSE}
+dato_emision2= filter(dato_emision, fuente!=c("TOTAL"))
+dato_emision2= filter(dato_emision2, fuente!="S_C")
+dato_emision2= filter(dato_emision2, fuente!="NI")
+dato_emision2= filter(dato_emision2, fuente!="I_E")
+dato_emision2= filter(dato_emision2, fuente!="CP")
+dato_emision2= filter(dato_emision2, fuente!="C_S_SP")
+dato_emision2= filter(dato_emision2, fuente!="A_P_M")
+dato_emision2= filter(dato_emision2, fuente!="R")
+
+dato_emision2$fuente=as.factor(dato_emision2$fuente)
+dato_emision2$emisión=as.numeric(dato_emision2$emisión)
+
+```
+
+```{r}
+dato_emision2%>%
+  filter(!is.na(emisión))%>%
+  ggplot(aes(AÑO , emisión, group=1 ))+
+  geom_point()+
+  geom_line()+
+  facet_wrap(~fuente)
+```
+
+En el siguiente grafico se puede ver que la fuente "Q_B" (quema de biomasa con fines energeticos) ha presentado un crecimiento a lo largo de los años a partir del año 2000. Un caso similar sucede con la fuente "T" (quema de combustibles fosiles para el transporte individual y/o colectivo por medios aereos). Las demas fuentes presentan una emision de CO2 irregular.
+
+
+\newpage
+
+
+##Parte 5
+
+```{r}
+library(forcats)
+
+dato_emision2%>%
+  filter(!is.na(emisión))%>%
+  mutate(emisión, GGemision=emisión/10)%>%
+  ggplot(aes(x=fct_reorder(fuente, emisión, .desc = T), y=GGemision))+
+  geom_boxplot()
+```
+
+En este grafico podemos apreciar que las fuentes que mas CO2 emiten ("Q_B" y "T") tienen igual mediana. Es decir, las dos fuentes acumulan el 50% de su distribucion en el valor de los 2500 GG.
+
+\newpage
+
+##Parte 6
+
+```{r, echo= FALSE}
+library(ggpmisc)
+dato_emision$emisión=as.numeric(dato_emision$emisión)
+
+```
+
+
+```{r}
+dato_emision%>%
+  filter(!is.na(emisión))%>%
+  filter(fuente=="TOTAL")%>%
+  mutate(emisión, GGemision=emisión/10)%>%
+  ggplot(aes(AÑO,GGemision, group=1))+
+  geom_line()+
+  geom_point()+
+  scale_x_continuous(breaks=c(1990,2000,2010))+
+  stat_peaks(colour="red")+
+  stat_peaks(geom="text" ,colour = "red", vjust=-0.5)
+```
+
+En este grafico podemos ver los maximos relativos de la emision de CO2 de las 5 fuentes que mas cantidad emiten a lo largo de los años. Se puede observar que cada maximo es superior al anterior 
+
+\newpage
+
+#Ejercicio 2
+
+##Preguntas Orientadoras
+
+1. ¿Cual es la proporcion de personas que pertenecen a ASSE , IAMC y seguros privados segun departamento?
+
+2. ¿Cuales son las 10 proporciones de prestadores mas grandes?
+
+3. ¿Como se ve afectado el importe segun los distintos rangos de edad?
+
+4. ¿Como se ven afectadas las 10 prestaciones mas frecuentes segun Sexo y departamento de residencia?
+
+5. Analizar el importe segun las 10 prestaciones mas frecuentes.
+
+
+### Pregunta 1
+
+
+```{r, echo=FALSE}
+DatosGM=datos_gastos_por_actos_mdicos_2016
+DatosGM$Prestador=as.factor(DatosGM$Prestador)
+DatosGM$Sexo=as.factor(DatosGM$Sexo)
+DatosGM$Departamento_residencia=as.factor(DatosGM$Departamento_residencia)
+DatosGM$Prestador_tipo=as.factor(DatosGM$Prestador_tipo)
+DatosGM$Importe=as.numeric(DatosGM$Importe)
+DatosGM$Prestacion=as.factor(DatosGM$Prestacion)
+```
+
+```{r}
+library(tidyverse)
+
+DatosGM%>%
+  filter(!is.na(Prestador_tipo)) %>% 
+  ggplot()+
+  geom_bar(aes(fct_infreq(Departamento_residencia), fill= Prestador_tipo) , position = "fill")+
+  coord_flip()+
+  labs(x="Departamento de Residencia", y="Porcentaje", fill="Tipo de prestador")
+
+```
+
+Se puede observar que en la mayoria de los departamentos del interior hay muy poco porcentaje de "seguro privado" como tipo de prestador. Rio Negro es el departamento que menor porcentaje presenta de Instituciones de asistencia medica colectiva(IAMC).
+
+###Pregunta 2
+
+```{r}
+DatosGM%>%
+  group_by(Prestador)%>%
+  summarise(CantP=n())%>%
+  arrange(desc(CantP))%>%
+  filter(CantP>524)%>%
+  mutate(PropPrest= (CantP/sum(CantP))*100)%>%
+  ggplot()+
+  geom_point(aes(fct_reorder(Prestador, PropPrest, .desc = F), y=PropPrest))+
+  coord_flip()+
+  theme(axis.text.x = element_text(angle=270))+
+  labs(x="Prestador", y="Porcentaje")
+```
+
+En este grafico podemos observar los diez prestadores que tienen mayores porcentajes de pacientes. Podemos ver que el centro medico CASMU es el prestador que tiene porcentaje mas alto de pacientes y el hospital evangelico es el que menor porcentaje presenta dentro de esta categoria. 
+
+###Pregunta 3
+
+```{r, echo=FALSE}
+library(arules)
+DatosGM$Importe=discretize(DatosGM$Importe)
+DatosGM$Edad_años=discretize(DatosGM$Edad_años)
+levels(DatosGM$Importe)=c("[161,106000)","[106000,150000)","[150000,5490000]")
+
+```
+
+```{r}
+DatosGM%>%
+  filter(!is.na(Importe), !is.na(Edad_años))%>%
+  ggplot()+
+  geom_count(aes(Importe, Edad_años))+
+  labs(x="Importe en intervalos($)", y="Edad (años) en intervalos", size="Cantidad de observaciones")
+```
+
+El siguiente grafico nos permite analizar los importes segun la edad. Podemos ver que entre los años de vida 0 y 60 casi no se encuentran casos cuyos importes esten situados entre los 100 y 150 mil pesos uruguayos. A su vez podemos ver que para las edades mas grandes (entre 73 y 106) hay muchas observaciones para los distintos rangos de importes. Esto tiene mucho sentido ya que por lo general mientras mas grande es el individuo, necesita mas atencion medica.
+
+###Pregunta 4
+
+```{r, echo=FALSE}
+DatosGM%>%
+  filter(!is.na(Prestacion))%>%
+  group_by(Prestacion)%>%
+  summarise(Prest=n())%>%
+  arrange(desc(Prest))%>%
+  filter(Prest>461)
+
+Datos41=filter(DatosGM, Prestacion=="PCI-Cateterismo izq.adultos")
+Datos42=filter(DatosGM, Prestacion=="DIALISIS - HEMODIALISIS")
+Datos43=filter(DatosGM, Prestacion=="PCI-ATCP c/cateterismo izq.")
+Datos44=filter(DatosGM, Prestacion=="CIRUGIA CARDIACA ADULTO")
+Datos44=filter(DatosGM, Prestacion=="DIALISIS - HEMODIALISIS")
+Datos45=filter(DatosGM, Prestacion=="PROTESIS DE RODILLA IMPLANTE")
+Datos46=filter(DatosGM, Prestacion=="PROTESIS DE CADERA POR ARTROSIS")
+Datos47=filter(DatosGM, Prestacion=="MARCAPASOS IMPLANTE")
+Datos48=filter(DatosGM, Prestacion=="PROTESIS DE CADERA POR FRACTURA")
+Datos49=filter(DatosGM, Prestacion=="REPRODUCCION ASISTIDA DE ALTA COMPLEJIDAD")
+Datos410=filter(DatosGM, Prestacion=="MARCAPASOS PROCEDIMIENTOS POSTERIORES")
+
+Datos4= rbind(Datos410, Datos41, Datos42, Datos43, Datos44, Datos45, Datos46, Datos47, Datos48, Datos49)
+rm(Datos410, Datos41, Datos42, Datos43, Datos44, Datos45, Datos46, Datos47, Datos48, Datos49)
+
+```
+
+```{r}
+Datos4%>%
+  ggplot()+
+  geom_bar(aes(Prestacion, fill= Sexo), position = "fill")+
+  coord_flip()+
+  labs(x="10 prestaciones más frecuentes", y="Porcentaje", fill="Sexo")
+
+
+Datos4%>%
+  filter(!is.na(Prestacion), !is.na(Importe))%>%
+  ggplot()+
+  geom_bar(aes(Prestacion, fill= Edad_años), position = "fill")+
+  coord_flip()+
+  labs(x="10 prestaciones más frecuentes", y="Porcentaje", fill="Edad (años)")
+```
+
+En estos dos graficos podemos analizar el sexo y la edad en años de los pacientes, segun las 10 prestaciones que suceden con mas frecuencia. Alguno de los datos a resaltar son que las personas de sexo femenino presentan mas porcentaje de Protesis (tanto de cadera como de rodilla) que las de sexo masculino, que las personas de sexo masculino presentan mayor porcentaje de procedimientos coronarios intervencionista. Y en el caso de las edades podemos ver que las prestaciones relacionadas con marcapasos y las protesis de cadera por fracutra se dan con mayor frecuencia en los pacientes que tienen entre 76 y 106 años. En el caso de las dialisis se dan con mayor frecuencia con los pacientes que tienen entre 0 y 60 años.
+
+###Pregunta 5
+
+```{r, echo=FALSE}
+DatosGM$Importe=datos_gastos_por_actos_mdicos_2016$Importe
+
+Datos41=filter(DatosGM, Prestacion=="PCI-Cateterismo izq.adultos")
+Datos42=filter(DatosGM, Prestacion=="DIALISIS - HEMODIALISIS")
+Datos43=filter(DatosGM, Prestacion=="PCI-ATCP c/cateterismo izq.")
+Datos44=filter(DatosGM, Prestacion=="CIRUGIA CARDIACA ADULTO")
+Datos44=filter(DatosGM, Prestacion=="DIALISIS - HEMODIALISIS")
+Datos45=filter(DatosGM, Prestacion=="PROTESIS DE RODILLA IMPLANTE")
+Datos46=filter(DatosGM, Prestacion=="PROTESIS DE CADERA POR ARTROSIS")
+Datos47=filter(DatosGM, Prestacion=="MARCAPASOS IMPLANTE")
+Datos48=filter(DatosGM, Prestacion=="PROTESIS DE CADERA POR FRACTURA")
+Datos49=filter(DatosGM, Prestacion=="REPRODUCCION ASISTIDA DE ALTA COMPLEJIDAD")
+Datos410=filter(DatosGM, Prestacion=="MARCAPASOS PROCEDIMIENTOS POSTERIORES")
+
+Datos4= rbind(Datos410, Datos41, Datos42, Datos43, Datos44, Datos45, Datos46, Datos47, Datos48, Datos49)
+rm(Datos410, Datos41, Datos42, Datos43, Datos44, Datos45, Datos46, Datos47, Datos48, Datos49)
+
+```
+
+```{r}
+Datos4%>%
+  filter(!is.na(Importe), !is.na(Prestacion))%>%
+  ggplot(aes(Importe, colour=Prestacion))+
+  geom_freqpoly(size=1)+
+  scale_colour_brewer(palette = "Set1")+
+  labs(x="Importe", y="Cantidad de observaciones")
+
+```
+
+En este grafico podemos ver la cantidad de casos que cuestan determinado importe segun el tipo de prestacion. Podemos resaltar los casos de los procedimientos coronarios intervencionistas cuyos valores de importe son aproximadamente $50000 y 10000 respectivamente y cuyas cantidades de observaciones son superiores a las 4000 en el primer caso y en el entorno de las 3500 en el segundo caso.
+
+
+
