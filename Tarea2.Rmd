@@ -3,8 +3,6 @@ title: "Tarea 2"
 output: pdf_document
 ---
 
-\newpage
-
 
 \centering
 
@@ -16,10 +14,10 @@ output: pdf_document
 
 ##Parte 1
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, message=FALSE}
 library(tidyverse)
-dato_emision<- gather(emisiones, key = fuente, value = emisión, -AÑO)
 
+dato_emision<- gather(data=read.csv("emisiones.csv", encoding="latin1", dec = ","), key = fuente, value = emisión, -AÑO)
 
 
 dato_emision1= filter(dato_emision, fuente!=c("TOTAL"))
@@ -31,7 +29,7 @@ dato_emision1$fuente=as.factor(dato_emision1$fuente)
 dato_emision1$emisión=as.numeric(dato_emision1$emisión)
 ```
 
-```{r}
+```{r, message=F}
 dato_emision1%>%
   filter(!is.na(emisión))%>%
   group_by(fuente)%>%
@@ -79,15 +77,17 @@ dato_emision2$emisión=as.numeric(dato_emision2$emisión)
 ```
 
 ```{r}
+
 dato_emision2%>%
   filter(!is.na(emisión))%>%
   ggplot(aes(AÑO , emisión, group=1 ))+
   geom_point()+
   geom_line()+
-  facet_wrap(~fuente)
+  facet_wrap(~fuente)+
+  ggtitle("Gráfico de emisiones a lo largo de los años")
 ```
 
-En el siguiente grafico se puede ver que la fuente "Q_B" (quema de biomasa con fines energeticos) ha presentado un crecimiento a lo largo de los años a partir del año 2000. Un caso similar sucede con la fuente "T" (quema de combustibles fosiles para el transporte individual y/o colectivo por medios aereos). Las demas fuentes presentan una emision de CO2 irregular.
+En el siguiente gráfico se puede ver que la fuente "Q_B" (quema de biomasa con fines energéticos) ha presentado un crecimiento a lo largo de los años a partir del año 2000. Un caso similar sucede con la fuente "T" (quema de combustibles fosiles para el transporte individual y/o colectivo por medios aereos). Las demás fuentes presentan una emision de CO2 irregular.
 
 
 \newpage
@@ -102,16 +102,17 @@ dato_emision2%>%
   filter(!is.na(emisión))%>%
   mutate(emisión, GGemision=emisión/10)%>%
   ggplot(aes(x=fct_reorder(fuente, emisión, .desc = T), y=GGemision))+
-  geom_boxplot()
+  geom_boxplot()+
+  ggtitle("Boxplot de emisiones para las 5 fuentes con mayores emisiones medias ")
 ```
 
-En este grafico podemos apreciar que las fuentes que mas CO2 emiten ("Q_B" y "T") tienen igual mediana. Es decir, las dos fuentes acumulan el 50% de su distribucion en el valor de los 2500 GG.
+En este gráfico podemos apreciar que las fuentes que mas CO2 emiten ("Q_B" y "T") tienen igual mediana. Es decir, las dos fuentes acumulan el 50% de su distribución en el valor de los 2500 GG.
 
 \newpage
 
 ##Parte 6
 
-```{r, echo= FALSE}
+```{r, echo= FALSE, message=FALSE}
 library(ggpmisc)
 dato_emision$emisión=as.numeric(dato_emision$emisión)
 
@@ -131,7 +132,7 @@ dato_emision%>%
   stat_peaks(geom="text" ,colour = "red", vjust=-0.5)
 ```
 
-En este grafico podemos ver los maximos relativos de la emision de CO2 de las 5 fuentes que mas cantidad emiten a lo largo de los años. Se puede observar que cada maximo es superior al anterior 
+En este gráfico podemos ver los máximos relativos de la emisión de CO2 de las 5 fuentes que mas cantidad emiten a lo largo de los años. Se puede observar que cada máximo es superior al anterior. 
 
 \newpage
 
@@ -139,7 +140,7 @@ En este grafico podemos ver los maximos relativos de la emision de CO2 de las 5 
 
 ##Preguntas Orientadoras
 
-1. ¿Cual es la proporcion de personas que pertenecen a ASSE , IAMC y seguros privados segun departamento?
+1. ¿Cual es la proporción de personas que pertenecen a ASSE , IAMC y seguros privados segun departamento?
 
 2. ¿Cuales son las 10 proporciones de prestadores mas grandes?
 
@@ -147,35 +148,41 @@ En este grafico podemos ver los maximos relativos de la emision de CO2 de las 5 
 
 4. ¿Como se ven afectadas las 10 prestaciones mas frecuentes segun Sexo y departamento de residencia?
 
-5. Analizar el importe segun las 10 prestaciones mas frecuentes.
+5. Analizar el importe segun las 10 prestaciones más frecuentes.
 
+\newpage
 
 ### Pregunta 1
 
 
-```{r, echo=FALSE}
-DatosGM=datos_gastos_por_actos_mdicos_2016
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+DatosGM=read.csv("datosgm.csv", sep = ",")
 DatosGM$Prestador=as.factor(DatosGM$Prestador)
 DatosGM$Sexo=as.factor(DatosGM$Sexo)
 DatosGM$Departamento_residencia=as.factor(DatosGM$Departamento_residencia)
 DatosGM$Prestador_tipo=as.factor(DatosGM$Prestador_tipo)
+DatosGM$Importe=as.character(DatosGM$Importe)
 DatosGM$Importe=as.numeric(DatosGM$Importe)
 DatosGM$Prestacion=as.factor(DatosGM$Prestacion)
+
+library(tidyverse)
 ```
 
-```{r}
-library(tidyverse)
+```{r, message=FALSE, warning=FALSE}
 
 DatosGM%>%
   filter(!is.na(Prestador_tipo)) %>% 
   ggplot()+
   geom_bar(aes(fct_infreq(Departamento_residencia), fill= Prestador_tipo) , position = "fill")+
   coord_flip()+
-  labs(x="Departamento de Residencia", y="Porcentaje", fill="Tipo de prestador")
+  labs(x="Departamento de Residencia", y="Porcentaje", fill="Tipo de prestador")+
+  ggtitle("Grafico de barras por departamento según tipo de institución")
 
 ```
 
 Se puede observar que en la mayoria de los departamentos del interior hay muy poco porcentaje de "seguro privado" como tipo de prestador. Rio Negro es el departamento que menor porcentaje presenta de Instituciones de asistencia medica colectiva(IAMC).
+
+\newpage
 
 ###Pregunta 2
 
@@ -190,14 +197,17 @@ DatosGM%>%
   geom_point(aes(fct_reorder(Prestador, PropPrest, .desc = F), y=PropPrest))+
   coord_flip()+
   theme(axis.text.x = element_text(angle=270))+
-  labs(x="Prestador", y="Porcentaje")
+  labs(x="Prestador", y="Porcentaje")+
+  ggtitle("Scatterplot instituciones médicas")
 ```
 
-En este grafico podemos observar los diez prestadores que tienen mayores porcentajes de pacientes. Podemos ver que el centro medico CASMU es el prestador que tiene porcentaje mas alto de pacientes y el hospital evangelico es el que menor porcentaje presenta dentro de esta categoria. 
+En este gráfico podemos observar los diez prestadores que tienen mayores porcentajes de pacientes. Podemos ver que el centro médico CASMU es el prestador que tiene porcentaje más alto de pacientes y el hospital evangélico es el que menor porcentaje presenta dentro de esta categoría. 
+
+\newpage
 
 ###Pregunta 3
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, message=FALSE}
 library(arules)
 DatosGM$Importe=discretize(DatosGM$Importe)
 DatosGM$Edad_años=discretize(DatosGM$Edad_años)
@@ -213,11 +223,14 @@ DatosGM%>%
   labs(x="Importe en intervalos($)", y="Edad (años) en intervalos", size="Cantidad de observaciones")
 ```
 
-El siguiente grafico nos permite analizar los importes segun la edad. Podemos ver que entre los años de vida 0 y 60 casi no se encuentran casos cuyos importes esten situados entre los 100 y 150 mil pesos uruguayos. A su vez podemos ver que para las edades mas grandes (entre 73 y 106) hay muchas observaciones para los distintos rangos de importes. Esto tiene mucho sentido ya que por lo general mientras mas grande es el individuo, necesita mas atencion medica.
+El siguiente gráfico nos permite analizar los importes segun la edad. Podemos ver que entre los años de vida 0 y 60 casi no se encuentran casos cuyos importes esten situados entre los 100 y 150 mil pesos uruguayos. A su vez podemos ver que para las edades más grandes (entre 73 y 106) hay muchas observaciones para los distintos rangos de importes. Esto tiene mucho sentido ya que por lo general mientras mas grande es el individuo, necesita mas atención médica.
+
+\newpage
 
 ###Pregunta 4
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, results=FALSE}
+
 DatosGM%>%
   filter(!is.na(Prestacion))%>%
   group_by(Prestacion)%>%
@@ -258,12 +271,16 @@ Datos4%>%
   labs(x="10 prestaciones más frecuentes", y="Porcentaje", fill="Edad (años)")
 ```
 
-En estos dos graficos podemos analizar el sexo y la edad en años de los pacientes, segun las 10 prestaciones que suceden con mas frecuencia. Alguno de los datos a resaltar son que las personas de sexo femenino presentan mas porcentaje de Protesis (tanto de cadera como de rodilla) que las de sexo masculino, que las personas de sexo masculino presentan mayor porcentaje de procedimientos coronarios intervencionista. Y en el caso de las edades podemos ver que las prestaciones relacionadas con marcapasos y las protesis de cadera por fracutra se dan con mayor frecuencia en los pacientes que tienen entre 76 y 106 años. En el caso de las dialisis se dan con mayor frecuencia con los pacientes que tienen entre 0 y 60 años.
+En estos dos gráficos podemos analizar el sexo y la edad en años de los pacientes, segun las 10 prestaciones que suceden con mas frecuencia. Alguno de los datos a resaltar son que las personas de sexo femenino presentan mas porcentaje de Protesis (tanto de cadera como de rodilla) que las de sexo masculino, que las personas de sexo masculino presentan mayor porcentaje de procedimientos coronarios intervencionista. Y en el caso de las edades podemos ver que las prestaciones relacionadas con marcapasos y las protesis de cadera por fracutra se dan con mayor frecuencia en los pacientes que tienen entre 76 y 106 años. En el caso de las diálisis se dan con mayor frecuencia con los pacientes que tienen entre 0 y 60 años.
+
+\newpage
+
 
 ###Pregunta 5
 
-```{r, echo=FALSE}
-DatosGM$Importe=datos_gastos_por_actos_mdicos_2016$Importe
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+
+DatosGM=read.csv("datosgm.csv", sep = ",")
 
 Datos41=filter(DatosGM, Prestacion=="PCI-Cateterismo izq.adultos")
 Datos42=filter(DatosGM, Prestacion=="DIALISIS - HEMODIALISIS")
@@ -280,9 +297,13 @@ Datos410=filter(DatosGM, Prestacion=="MARCAPASOS PROCEDIMIENTOS POSTERIORES")
 Datos4= rbind(Datos410, Datos41, Datos42, Datos43, Datos44, Datos45, Datos46, Datos47, Datos48, Datos49)
 rm(Datos410, Datos41, Datos42, Datos43, Datos44, Datos45, Datos46, Datos47, Datos48, Datos49)
 
+Datos4$Importe=as.character(Datos4$Importe)
+Datos4$Importe=as.numeric(Datos4$Importe)
+
 ```
 
-```{r}
+```{r, error=FALSE}
+
 Datos4%>%
   filter(!is.na(Importe), !is.na(Prestacion))%>%
   ggplot(aes(Importe, colour=Prestacion))+
@@ -292,7 +313,7 @@ Datos4%>%
 
 ```
 
-En este grafico podemos ver la cantidad de casos que cuestan determinado importe segun el tipo de prestacion. Podemos resaltar los casos de los procedimientos coronarios intervencionistas cuyos valores de importe son aproximadamente $50000 y 10000 respectivamente y cuyas cantidades de observaciones son superiores a las 4000 en el primer caso y en el entorno de las 3500 en el segundo caso.
+En este gráfico podemos ver la cantidad de casos que cuestan determinado importe segun el tipo de prestación. Podemos resaltar los casos de los procedimientos coronarios intervencionistas cuyos valores de importe son aproximadamente $50000 y 10000 respectivamente y cuyas cantidades de observaciones son superiores a las 4000 en el primer caso y en el entorno de las 3500 en el segundo caso. Tambien se puede notar que la diálisis y hemodialisis presentan muchas observaciones al rededor de los 600000 pesos.
 
 
 
